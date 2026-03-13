@@ -108,11 +108,11 @@ const Icon = ({ name, size = 20, color }) => {
     edit: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <path d="M5 15.5 L15.5 5 C16.3 4.2 17.6 4.2 18.4 5 L19 5.6 C19.8 6.4 19.8 7.7 19 8.5 L8.5 19 Z"
-          fill={col} opacity=".15" stroke={col} strokeWidth="1.7" strokeLinejoin="round"/>
+          fill={col} opacity=".35" stroke={col} strokeWidth="2" strokeLinejoin="round"/>
         <path d="M4 20 L5 15.5 L8.5 19 Z"
-          fill={col} stroke={col} strokeWidth="1.5" strokeLinejoin="round"/>
+          fill={col} stroke={col} strokeWidth="2" strokeLinejoin="round"/>
         <line x1="14" y1="6.5" x2="17.5" y2="10"
-          stroke={col} strokeWidth="1.4" strokeLinecap="round" opacity=".5"/>
+          stroke={col} strokeWidth="1.8" strokeLinecap="round" opacity=".8"/>
       </svg>
     ),
     // Trash — delete
@@ -175,7 +175,7 @@ const Icon = ({ name, size = 20, color }) => {
 
 // ── Global CSS ──────────────────────────────────────────────────────────────────
 const BASE_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { height: 100%; }
   body { font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -317,7 +317,7 @@ function SettingsModal({ themePref, setThemePref, foods, setFoods, onClose }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Icon name="gear" size={22} color={C.accent} />
-            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 18, color: C.text }}>Impostazioni</span>
+            <span style={{ fontFamily: "Outfit", fontWeight: 800, fontSize: 18, color: C.text }}>Impostazioni</span>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
             <Icon name="close" size={26} />
@@ -443,11 +443,19 @@ function AlimentiSection({ foods, setFoods, autoFocusTrigger }) {
     ? (parseFloat(form.choPerPorzione) / parseFloat(form.porzione) * 100).toFixed(1)
     : null;
 
+  const [dupError, setDupError] = useState(null);
+
   const save = () => {
     if (!form.nome.trim() || !form.choPerPorzione || !form.porzione) return;
+    const nomeTrim = form.nome.trim();
+    const nomeNorm = nomeTrim.toLowerCase();
+    // Controlla duplicati (escludi l'elemento in modifica)
+    const dup = foods.find(f => f.nome.toLowerCase() === nomeNorm && f.id !== editId);
+    if (dup) { setDupError(`"${nomeTrim}" esiste già nella lista.`); return; }
+    setDupError(null);
     const porzione = +form.porzione;
     const choPer100 = +(parseFloat(form.choPerPorzione) / porzione * 100).toFixed(2);
-    const entry = { id: editId ?? Date.now(), nome: form.nome.trim(), choPer100, porzione };
+    const entry = { id: editId ?? Date.now(), nome: nomeTrim, choPer100, porzione };
     const next = editId !== null ? foods.map(f => f.id === editId ? entry : f) : [...foods, entry];
     const sorted = [...next].sort((a,b) => a.nome.toLowerCase().localeCompare(b.nome.toLowerCase()));
     setForm(empty); setEditId(null); setFoods(sorted); saveFoods(sorted);
@@ -486,7 +494,7 @@ function AlimentiSection({ foods, setFoods, autoFocusTrigger }) {
       <Card>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           {editId !== null ? <Icon name="edit" size={18} /> : <Icon name="plus" size={18} />}
-          <span style={{ fontFamily: "Syne", fontSize: 13, color: C.accent, letterSpacing: 1 }}>
+          <span style={{ fontFamily: "Outfit", fontSize: 13, color: C.accent, letterSpacing: 1 }}>
             {editId !== null ? "MODIFICA ALIMENTO" : "NUOVO ALIMENTO"}
           </span>
         </div>
@@ -494,7 +502,11 @@ function AlimentiSection({ foods, setFoods, autoFocusTrigger }) {
           <div>
             <Label>Nome alimento</Label>
             <Input ref={nomeRef} placeholder="es. Pasta di semola" value={form.nome}
-              onChange={e => set("nome", e.target.value)} />
+              onChange={e => { set("nome", e.target.value); setDupError(null); }}
+              style={dupError ? { borderColor: C.warn } : {}} />
+            {dupError && (
+              <div style={{ fontSize: 12, color: C.warn, marginTop: 4 }}>{dupError}</div>
+            )}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
@@ -655,7 +667,7 @@ function PastoSection({ foods, autoFocusTrigger, meal, setMeal }) {
       {/* Calculator */}
       {selected && (
         <Card className="fade-up" style={{ borderColor: C.accent + "55", padding: 12 }}>
-          <div style={{ fontFamily: "Syne", fontSize: 14, fontWeight: 700, marginBottom: 8, color: C.accent }}>
+          <div style={{ fontFamily: "Outfit", fontSize: 14, fontWeight: 700, marginBottom: 8, color: C.accent }}>
             {selected.nome}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
@@ -698,7 +710,7 @@ function PastoSection({ foods, autoFocusTrigger, meal, setMeal }) {
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
             <Icon name="meal" size={14} color={C.muted} />
-            <span style={{ fontFamily: "Syne", fontSize: 10, letterSpacing: 2,
+            <span style={{ fontFamily: "Outfit", fontSize: 10, letterSpacing: 2,
               color: C.muted, textTransform: "uppercase" }}>Piatti nel pasto</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -753,14 +765,14 @@ function PastoSection({ foods, autoFocusTrigger, meal, setMeal }) {
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: C.muted }}>
                 Totale CHO
               </div>
-              <div style={{ fontFamily: "Syne", fontSize: 22, fontWeight: 800, color: C.accent, lineHeight: 1.3 }}>
+              <div style={{ fontFamily: "DM Sans", fontSize: 24, fontWeight: 700, color: C.accent, lineHeight: 1.3, letterSpacing: -0.5 }}>
                 {totalCho.toFixed(1)}<span style={{ fontSize: 12, fontWeight: 400, color: C.muted }}> g &nbsp;·&nbsp; {meal.length} piatt{meal.length === 1 ? "o" : "i"}</span>
               </div>
             </div>
           </div>
           <Btn variant="danger" onClick={reset}
-            style={{ fontSize: 11, padding: "7px 12px", gap: 4, alignSelf: "center" }}>
-            <Icon name="broom" size={15} color="#ff6b6b" /> Svuota
+            style={{ fontSize: 13, padding: "7px 16px", gap: 5, alignSelf: "center", fontWeight: 700 }}>
+            <Icon name="broom" size={17} color="#ff6b6b" /> Svuota
           </Btn>
         </div>
       )}
@@ -841,7 +853,7 @@ export default function App() {
           transition: "background .3s" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <Icon name="logo" size={24} />
-            <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 18,
+            <span style={{ fontFamily: "Outfit", fontWeight: 800, fontSize: 20,
               color: C.accent, letterSpacing: -0.5, lineHeight: 1 }}>
               CarboCount
             </span>
